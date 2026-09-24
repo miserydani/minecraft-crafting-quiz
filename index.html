@@ -11,7 +11,48 @@
 
 <title>Minecraft Crafting Quiz</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
+<script>
+/* TMI.JS loader con respaldo: usa el mismo build 1.8.5 en varias fuentes. */
+window.tmiReady = new Promise((resolve, reject) => {
+    const sources = [
+        "https://github.com/tmijs/tmi.js/releases/download/v1.8.5/tmi.min.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js",
+        "https://cdn.jsdelivr.net/gh/tmijs/tmi.js@v1.8.5/dist/tmi.min.js"
+    ];
+
+    let index = 0;
+
+    function loadNext() {
+        if (index >= sources.length) {
+            reject(new Error("No se pudo cargar ninguna fuente de TMI.js"));
+            return;
+        }
+
+        const src = sources[index++];
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = false;
+
+        script.onload = () => {
+            if (typeof window.tmi !== "undefined") {
+                console.log("TMI.js cargado desde:", src);
+                resolve(window.tmi);
+            } else {
+                loadNext();
+            }
+        };
+
+        script.onerror = () => {
+            console.warn("Falló TMI.js:", src);
+            loadNext();
+        };
+
+        document.head.appendChild(script);
+    }
+
+    loadNext();
+});
+</script>
 
 <style>
 
@@ -898,7 +939,7 @@ const MESSAGE_COOLDOWN = 700;
     hasta que aparece otra receta.
 */
 
-const NEXT_RECIPE_COOLDOWN = 2500;
+const NEXT_RECIPE_COOLDOWN = 5000;
 
 
 /*
@@ -2918,10 +2959,7 @@ function connectTwitch() {
     }
 
 
-    if (
-        typeof tmi ===
-        "undefined"
-    ) {
+    if (typeof window.tmi === "undefined") {
 
         status.textContent =
             "No se pudo cargar TMI.js.";
@@ -2955,7 +2993,7 @@ function connectTwitch() {
 
 
     twitchClient =
-        new tmi.Client({
+        new window.tmi.Client({
 
             options: {
                 debug: false
@@ -2972,6 +3010,14 @@ function connectTwitch() {
             ]
 
         });
+
+    twitchClient.on(
+        "error",
+        (error) => {
+            console.error("TMI/Twitch error:", error);
+            chatStatus.textContent = "Twitch: error";
+        }
+    );
 
 
     twitchClient.on(
@@ -3119,7 +3165,15 @@ loadItemTextures()
 
             newRecipe();
 
-            connectTwitch();
+            window.tmiReady
+    .then(() => {
+        connectTwitch();
+    })
+    .catch((error) => {
+        console.error("TMI.js no pudo cargarse:", error);
+        status.textContent = "No se pudo cargar TMI.js.";
+        chatStatus.textContent = "Twitch: error";
+    });
 
         }
     );
