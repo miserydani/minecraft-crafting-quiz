@@ -614,14 +614,14 @@ body {
 
 .participant-skin {
 
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 
     object-fit: cover;
 
     image-rendering: pixelated;
 
-    flex: 0 0 20px;
+    flex: 0 0 22px;
 
 }
 
@@ -926,8 +926,92 @@ const MINECRAFT_VERSION = "26.3";
     textures/item/diamond.png
 */
 
-const TEXTURE_BASE =
-    "https://cdn.jsdelivr.net/npm/minecraft-textures@26.3.0/assets/";
+/*
+    =========================================================
+    MINECRAFT ITEM TEXTURES
+    =========================================================
+
+    Cargamos los PNG vanilla desde el manifest oficial del
+    paquete minecraft-textures. El manifest legacy contiene
+    las imágenes como data:image/png;base64,..., así que
+    el navegador no depende de que una imagen externa
+    permita CORS.
+*/
+
+const ITEM_TEXTURES = new Map();
+
+const TEXTURE_MANIFEST_URL =
+    "https://cdn.jsdelivr.net/npm/minecraft-textures@26.3.0/dist/textures/json/26.3.json";
+
+
+async function loadItemTextures() {
+
+    try {
+
+        const response =
+            await fetch(
+                TEXTURE_MANIFEST_URL,
+                {
+                    cache: "force-cache"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " + response.status
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data &&
+            Array.isArray(data.items)
+        ) {
+
+            data.items.forEach(
+                item => {
+
+                    if (
+                        item &&
+                        item.id &&
+                        item.texture
+                    ) {
+
+                        ITEM_TEXTURES.set(
+                            item.id,
+                            item.texture
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        console.log(
+            "Texturas Minecraft cargadas:",
+            ITEM_TEXTURES.size
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "No se pudo cargar el manifest de texturas.",
+            error
+        );
+
+    }
+
+}
 
 
 function getTexture(id) {
@@ -947,14 +1031,34 @@ function getTexture(id) {
             );
 
 
+    const minecraftId =
+        "minecraft:" +
+        clean;
+
+
     /*
-        Texturas vanilla de Minecraft.
-        Se sirven desde el paquete minecraft-textures,
-        que incluye los PNG de los items de Minecraft 26.3.
+        Preferimos la imagen embebida en base64.
+    */
+
+    if (
+        ITEM_TEXTURES.has(
+            minecraftId
+        )
+    ) {
+
+        return ITEM_TEXTURES.get(
+            minecraftId
+        );
+
+    }
+
+
+    /*
+        Respaldo visual externo.
     */
 
     return (
-        TEXTURE_BASE +
+        "https://mcasset.cloud/26.3/assets/minecraft/textures/item/" +
         clean +
         ".png"
     );
@@ -2199,22 +2303,27 @@ const participants =
     la sesión del widget.
 */
 
+/*
+    Skins aleatorias de NameMC.
+
+    Son hashes de skins de la página de skins aleatorias
+    de NameMC. Usamos la miniatura de cara de NameMC
+    directamente, no una skin inventada.
+*/
+
 const RANDOM_SKINS = [
 
-    "MHF_Steve",
-    "MHF_Alex",
-    "MHF_Creeper",
-    "MHF_Zombie",
-    "MHF_Skeleton",
-    "MHF_Enderman",
-    "MHF_Pig",
-    "MHF_Slime",
-    "MHF_Ghast",
-    "MHF_Blaze",
-    "MHF_Spider",
-    "MHF_Villager",
-    "MHF_Chicken",
-    "MHF_IronGolem"
+    "a81fb683f4932800",
+    "ddeabddcaf39951f",
+    "ec34fb90262539ce",
+    "ffdf6cd46c5a07db",
+    "4e8fb80f2bfefad7",
+    "1304256c1c9bff39",
+    "95dee22b7bd250ea",
+    "ed969aab1609b602",
+    "a6a59fbf4426891e",
+    "e694298ac4198b12",
+    "ad9a5ad4833b5c84"
 
 ];
 
@@ -2321,9 +2430,9 @@ function addParticipant(username) {
                 "participant-skin";
 
             img.src =
-                "https://mc-heads.net/avatar/" +
+                "https://s.namemc.com/2d/skin/face.png?id=" +
                 participant.skin +
-                "/20.png";
+                "&scale=2";
 
             img.alt =
                 "";
@@ -2508,31 +2617,10 @@ function renderRecipe(recipe) {
                 function() {
 
                     /*
-                        Respaldo: si el CDN principal falla,
-                        intentamos MC Assets.
+                        Si una textura no existe,
+                        ocultamos la imagen en vez
+                        de romper el widget.
                     */
-
-                    if (!this.dataset.fallbackTried) {
-
-                        this.dataset.fallbackTried =
-                            "1";
-
-                        const clean =
-                            itemId
-                                .replace(
-                                    "minecraft:",
-                                    ""
-                                );
-
-                        this.src =
-                            "https://mcasset.cloud/26.3/assets/minecraft/textures/item/" +
-                            clean +
-                            ".png";
-
-                        return;
-
-                    }
-
 
                     this.style.display =
                         "none";
@@ -2722,40 +2810,6 @@ function correctAnswer(
         getTexture(
             currentRecipe.id
         );
-
-
-    result.dataset.fallbackTried =
-        "";
-
-
-    result.onerror =
-        function() {
-
-            if (!this.dataset.fallbackTried) {
-
-                this.dataset.fallbackTried =
-                    "1";
-
-                const clean =
-                    currentRecipe.id
-                        .replace(
-                            "minecraft:",
-                            ""
-                        );
-
-                this.src =
-                    "https://mcasset.cloud/26.3/assets/minecraft/textures/item/" +
-                    clean +
-                    ".png";
-
-                return;
-
-            }
-
-            this.style.display =
-                "none";
-
-        };
 
 
     result.alt =
@@ -3039,14 +3093,21 @@ function connectTwitch() {
     seleccione una receta nueva.
 */
 
-newRecipe();
-
-
 /*
-    Después conectamos Twitch.
+    Primero cargamos las texturas vanilla.
+    Después mostramos la primera receta y conectamos Twitch.
 */
 
-connectTwitch();
+loadItemTextures()
+    .finally(
+        () => {
+
+            newRecipe();
+
+            connectTwitch();
+
+        }
+    );
 
 
 </script>
