@@ -1,1 +1,2555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
 
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Minecraft Crafting Quiz</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    background: transparent;
+
+    font-family:
+        "Trebuchet MS",
+        Arial,
+        sans-serif;
+
+}
+
+
+/* =========================================================
+   MAIN MINECRAFT GUI
+========================================================= */
+
+#minecraft {
+
+    width: 520px;
+    height: 310px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    background: #c6c6c6;
+
+    image-rendering: pixelated;
+
+    color: #404040;
+
+    padding: 18px 20px;
+
+}
+
+
+/* Minecraft GUI subtle texture */
+
+#minecraft::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: .08;
+
+    background-image:
+        linear-gradient(
+            45deg,
+            rgba(255,255,255,.35) 25%,
+            transparent 25%,
+            transparent 75%,
+            rgba(0,0,0,.15) 75%
+        );
+
+    background-size: 4px 4px;
+
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.content {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+    height: 100%;
+
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.title {
+
+    height: 25px;
+
+    font-size: 17px;
+
+    font-weight: 700;
+
+    color: #404040;
+
+    text-shadow:
+        1px 1px 0 #ffffff;
+
+    letter-spacing: .2px;
+
+}
+
+
+/* =========================================================
+   CRAFTING AREA
+========================================================= */
+
+.crafting {
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    margin-top: 5px;
+
+}
+
+
+/* =========================================================
+   3x3 GRID
+========================================================= */
+
+.grid {
+
+    width: 150px;
+    height: 150px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 50px);
+
+    grid-template-rows:
+        repeat(3, 50px);
+
+}
+
+
+/* =========================================================
+   MINECRAFT SLOT
+========================================================= */
+
+.slot {
+
+    width: 50px;
+    height: 50px;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #8b8b8b;
+
+    border-top:
+        3px solid #373737;
+
+    border-left:
+        3px solid #373737;
+
+    border-right:
+        3px solid #ffffff;
+
+    border-bottom:
+        3px solid #ffffff;
+
+}
+
+
+/* inner shadow */
+
+.slot::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 3px;
+
+    border-top:
+        1px solid #555;
+
+    border-left:
+        1px solid #555;
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   ITEM
+========================================================= */
+
+.item {
+
+    width: 38px;
+    height: 38px;
+
+    object-fit: contain;
+
+    image-rendering: pixelated;
+
+    position: relative;
+
+    z-index: 3;
+
+    filter:
+        drop-shadow(
+            2px 2px 0 rgba(0,0,0,.45)
+        );
+
+}
+
+
+/* =========================================================
+   ARROW
+========================================================= */
+
+.arrow-container {
+
+    width: 105px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+
+.arrow {
+
+    width: 55px;
+    height: 34px;
+
+    position: relative;
+
+}
+
+
+/* arrow body */
+
+.arrow::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    top: 11px;
+
+    width: 38px;
+
+    height: 12px;
+
+    background: #777;
+
+}
+
+
+/* arrow head */
+
+.arrow::after {
+
+    content: "";
+
+    position: absolute;
+
+    right: 0;
+
+    top: 2px;
+
+    width: 0;
+    height: 0;
+
+    border-top:
+        16px solid transparent;
+
+    border-bottom:
+        16px solid transparent;
+
+    border-left:
+        20px solid #777;
+
+}
+
+
+/* =========================================================
+   RESULT SLOT
+========================================================= */
+
+.result-slot {
+
+    width: 68px;
+    height: 68px;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #8b8b8b;
+
+    border-top:
+        4px solid #373737;
+
+    border-left:
+        4px solid #373737;
+
+    border-right:
+        4px solid #ffffff;
+
+    border-bottom:
+        4px solid #ffffff;
+
+}
+
+
+/* result inner */
+
+.result-slot::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 4px;
+
+    border-top:
+        1px solid #555;
+
+    border-left:
+        1px solid #555;
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   QUESTION
+========================================================= */
+
+.question {
+
+    margin-top: 8px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #404040;
+
+    text-shadow:
+        1px 1px 0 #ffffff;
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status {
+
+    margin-top: 8px;
+
+    min-height: 18px;
+
+    font-size: 10px;
+
+    color: #404040;
+
+    text-shadow:
+        1px 1px 0 #ffffff;
+
+}
+
+
+/* =========================================================
+   ANSWER
+========================================================= */
+
+.answer {
+
+    margin-top: 2px;
+
+    min-height: 22px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: #404040;
+
+    text-shadow:
+        1px 1px 0 #ffffff;
+
+}
+
+
+.answer.correct {
+
+    color: #209020;
+
+}
+
+
+/* =========================================================
+   CHAT INDICATOR
+========================================================= */
+
+.chat {
+
+    position: absolute;
+
+    right: 2px;
+
+    bottom: 4px;
+
+    font-size: 8px;
+
+    color: #555;
+
+    text-shadow:
+        1px 1px #fff;
+
+}
+
+
+/* =========================================================
+   RESULT ANIMATION
+========================================================= */
+
+.result-show {
+
+    animation:
+        resultPop
+        .22s
+        steps(3);
+
+}
+
+
+@keyframes resultPop {
+
+    0% {
+        transform: scale(.7);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   WINNER FLASH
+========================================================= */
+
+.winner {
+
+    animation:
+        winnerFlash
+        .35s
+        steps(2);
+
+}
+
+
+@keyframes winnerFlash {
+
+    0% {
+        opacity: .5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div id="minecraft">
+
+<div class="content">
+
+
+    <!-- =====================================================
+         TITLE
+    ====================================================== -->
+
+    <div class="title">
+
+        Crafting
+
+    </div>
+
+
+    <!-- =====================================================
+         CRAFTING TABLE
+    ====================================================== -->
+
+    <div class="crafting">
+
+
+        <!-- 3x3 -->
+
+        <div
+            id="grid"
+            class="grid"
+        ></div>
+
+
+        <!-- ARROW -->
+
+        <div class="arrow-container">
+
+            <div class="arrow"></div>
+
+        </div>
+
+
+        <!-- RESULT -->
+
+        <div class="result-slot">
+
+            <img
+                id="result"
+                class="item"
+                style="display:none"
+                alt=""
+            >
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         QUESTION
+    ====================================================== -->
+
+    <div class="question">
+
+        ¿Qué objeto se puede craftear?
+
+    </div>
+
+
+    <!-- =====================================================
+         STATUS
+    ====================================================== -->
+
+    <div
+        id="status"
+        class="status"
+    >
+
+        Conectando al chat...
+
+    </div>
+
+
+    <!-- =====================================================
+         ANSWER
+    ====================================================== -->
+
+    <div
+        id="answer"
+        class="answer"
+    ></div>
+
+
+    <!-- =====================================================
+         CHAT
+    ====================================================== -->
+
+    <div
+        id="chatStatus"
+        class="chat"
+    >
+
+        Twitch
+
+    </div>
+
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   TWITCH CHANNEL
+========================================================= */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+let CHANNEL =
+    params.get("channel") || "";
+
+
+CHANNEL =
+    CHANNEL
+        .replace("#", "")
+        .trim()
+        .toLowerCase();
+
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+
+/*
+    Tiempo mínimo entre mensajes procesados.
+*/
+
+const MESSAGE_COOLDOWN = 700;
+
+
+/*
+    Tiempo desde que alguien acierta
+    hasta que aparece otra receta.
+*/
+
+const NEXT_RECIPE_COOLDOWN = 2500;
+
+
+/*
+    Versión de Minecraft usada para
+    los assets.
+*/
+
+const MINECRAFT_VERSION = "26.3";
+
+
+/* =========================================================
+   ASSET URL
+========================================================= */
+
+
+/*
+    Assets vanilla de Minecraft.
+
+    Ejemplo:
+
+    minecraft:diamond
+
+    se convierte en:
+
+    textures/item/diamond.png
+*/
+
+function getTexture(id) {
+
+    if (!id) {
+
+        return "";
+
+    }
+
+
+    const clean =
+        id
+            .replace(
+                "minecraft:",
+                ""
+            );
+
+
+    return (
+        "https://mcasset.cloud/" +
+        MINECRAFT_VERSION +
+        "/assets/minecraft/" +
+        "textures/item/" +
+        clean +
+        ".png"
+    );
+
+}
+
+
+/* =========================================================
+   RECIPES
+========================================================= */
+
+
+/*
+    Todas estas son recetas de crafting
+    de Minecraft vanilla.
+
+    null = slot vacío.
+
+    Las posiciones corresponden a
+    la mesa 3x3.
+*/
+
+const RECIPES = [
+
+    /* =====================================================
+       DIAMOND SWORD
+    ====================================================== */
+
+    {
+        id: "minecraft:diamond_sword",
+
+        name: "Espada de diamante",
+
+        aliases: [
+            "espada de diamante",
+            "espada diamante",
+            "diamond sword",
+            "diamond_sword"
+        ],
+
+        pattern: [
+            "minecraft:diamond",
+            "minecraft:diamond",
+            null,
+
+            null,
+            "minecraft:diamond",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       IRON SWORD
+    ====================================================== */
+
+    {
+        id: "minecraft:iron_sword",
+
+        name: "Espada de hierro",
+
+        aliases: [
+            "espada de hierro",
+            "espada hierro",
+            "iron sword",
+            "iron_sword"
+        ],
+
+        pattern: [
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+            null,
+
+            null,
+            "minecraft:iron_ingot",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       GOLD SWORD
+    ====================================================== */
+
+    {
+        id: "minecraft:golden_sword",
+
+        name: "Espada de oro",
+
+        aliases: [
+            "espada de oro",
+            "espada oro",
+            "gold sword",
+            "golden sword",
+            "golden_sword"
+        ],
+
+        pattern: [
+            "minecraft:gold_ingot",
+            "minecraft:gold_ingot",
+            null,
+
+            null,
+            "minecraft:gold_ingot",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       STONE SWORD
+    ====================================================== */
+
+    {
+        id: "minecraft:stone_sword",
+
+        name: "Espada de piedra",
+
+        aliases: [
+            "espada de piedra",
+            "espada piedra",
+            "stone sword",
+            "stone_sword"
+        ],
+
+        pattern: [
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+            null,
+
+            null,
+            "minecraft:cobblestone",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       DIAMOND PICKAXE
+    ====================================================== */
+
+    {
+        id: "minecraft:diamond_pickaxe",
+
+        name: "Pico de diamante",
+
+        aliases: [
+            "pico de diamante",
+            "pico diamante",
+            "diamond pickaxe",
+            "diamond_pickaxe"
+        ],
+
+        pattern: [
+            "minecraft:diamond",
+            "minecraft:diamond",
+            "minecraft:diamond",
+
+            null,
+            "minecraft:stick",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       IRON PICKAXE
+    ====================================================== */
+
+    {
+        id: "minecraft:iron_pickaxe",
+
+        name: "Pico de hierro",
+
+        aliases: [
+            "pico de hierro",
+            "pico hierro",
+            "iron pickaxe",
+            "iron_pickaxe"
+        ],
+
+        pattern: [
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+
+            null,
+            "minecraft:stick",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       DIAMOND AXE
+    ====================================================== */
+
+    {
+        id: "minecraft:diamond_axe",
+
+        name: "Hacha de diamante",
+
+        aliases: [
+            "hacha de diamante",
+            "hacha diamante",
+            "diamond axe",
+            "diamond_axe"
+        ],
+
+        pattern: [
+            "minecraft:diamond",
+            "minecraft:diamond",
+            null,
+
+            "minecraft:diamond",
+            "minecraft:stick",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       DIAMOND SHOVEL
+    ====================================================== */
+
+    {
+        id: "minecraft:diamond_shovel",
+
+        name: "Pala de diamante",
+
+        aliases: [
+            "pala de diamante",
+            "pala diamante",
+            "diamond shovel",
+            "diamond_shovel"
+        ],
+
+        pattern: [
+            "minecraft:diamond",
+            null,
+            null,
+
+            "minecraft:stick",
+            null,
+            null,
+
+            "minecraft:stick",
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       DIAMOND HOE
+    ====================================================== */
+
+    {
+        id: "minecraft:diamond_hoe",
+
+        name: "Azada de diamante",
+
+        aliases: [
+            "azada de diamante",
+            "azada diamante",
+            "diamond hoe",
+            "diamond_hoe"
+        ],
+
+        pattern: [
+            "minecraft:diamond",
+            "minecraft:diamond",
+            null,
+
+            null,
+            "minecraft:stick",
+            null,
+
+            null,
+            "minecraft:stick",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       CRAFTING TABLE
+    ====================================================== */
+
+    {
+        id: "minecraft:crafting_table",
+
+        name: "Mesa de crafteo",
+
+        aliases: [
+            "mesa de crafteo",
+            "mesa de trabajo",
+            "crafting table",
+            "crafting_table"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            null,
+
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       FURNACE
+    ====================================================== */
+
+    {
+        id: "minecraft:furnace",
+
+        name: "Horno",
+
+        aliases: [
+            "horno",
+            "furnace"
+        ],
+
+        pattern: [
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+
+            "minecraft:cobblestone",
+            null,
+            "minecraft:cobblestone",
+
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+            "minecraft:cobblestone"
+        ]
+    },
+
+
+    /* =====================================================
+       CHEST
+    ====================================================== */
+
+    {
+        id: "minecraft:chest",
+
+        name: "Cofre",
+
+        aliases: [
+            "cofre",
+            "chest"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+
+            "minecraft:oak_planks",
+            null,
+            "minecraft:oak_planks",
+
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks"
+        ]
+    },
+
+
+    /* =====================================================
+       BARREL
+    ====================================================== */
+
+    {
+        id: "minecraft:barrel",
+
+        name: "Barril",
+
+        aliases: [
+            "barril",
+            "barrel"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+
+            "minecraft:oak_planks",
+            null,
+            "minecraft:oak_planks",
+
+            "minecraft:oak_slab",
+            "minecraft:oak_slab",
+            "minecraft:oak_slab"
+        ]
+    },
+
+
+    /* =====================================================
+       TORCH
+    ====================================================== */
+
+    {
+        id: "minecraft:torch",
+
+        name: "Antorcha",
+
+        aliases: [
+            "antorcha",
+            "torch"
+        ],
+
+        pattern: [
+            null,
+            "minecraft:coal",
+            null,
+
+            null,
+            "minecraft:stick",
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       LADDER
+    ====================================================== */
+
+    {
+        id: "minecraft:ladder",
+
+        name: "Escalera",
+
+        aliases: [
+            "escalera",
+            "ladder"
+        ],
+
+        pattern: [
+            "minecraft:stick",
+            null,
+            "minecraft:stick",
+
+            "minecraft:stick",
+            "minecraft:stick",
+            "minecraft:stick",
+
+            "minecraft:stick",
+            null,
+            "minecraft:stick"
+        ]
+    },
+
+
+    /* =====================================================
+       STICK
+    ====================================================== */
+
+    {
+        id: "minecraft:stick",
+
+        name: "Palo",
+
+        aliases: [
+            "palo",
+            "stick"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            null,
+            null,
+
+            "minecraft:oak_planks",
+            null,
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       BOWL
+    ====================================================== */
+
+    {
+        id: "minecraft:bowl",
+
+        name: "Cuenco",
+
+        aliases: [
+            "cuenco",
+            "bowl"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            null,
+            "minecraft:oak_planks",
+
+            null,
+            "minecraft:oak_planks",
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       BUCKET
+    ====================================================== */
+
+    {
+        id: "minecraft:bucket",
+
+        name: "Cubo",
+
+        aliases: [
+            "cubo",
+            "bucket"
+        ],
+
+        pattern: [
+            "minecraft:iron_ingot",
+            null,
+            "minecraft:iron_ingot",
+
+            null,
+            "minecraft:iron_ingot",
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       SHEARS
+    ====================================================== */
+
+    {
+        id: "minecraft:shears",
+
+        name: "Tijeras",
+
+        aliases: [
+            "tijeras",
+            "shears"
+        ],
+
+        pattern: [
+            null,
+            "minecraft:iron_ingot",
+            null,
+
+            "minecraft:iron_ingot",
+            null,
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       SHIELD
+    ====================================================== */
+
+    {
+        id: "minecraft:shield",
+
+        name: "Escudo",
+
+        aliases: [
+            "escudo",
+            "shield"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            "minecraft:iron_ingot",
+            "minecraft:oak_planks",
+
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+
+            null,
+            "minecraft:oak_planks",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       BOW
+    ====================================================== */
+
+    {
+        id: "minecraft:bow",
+
+        name: "Arco",
+
+        aliases: [
+            "arco",
+            "bow"
+        ],
+
+        pattern: [
+            null,
+            "minecraft:stick",
+            "minecraft:string",
+
+            "minecraft:stick",
+            null,
+            "minecraft:string",
+
+            null,
+            "minecraft:stick",
+            "minecraft:string"
+        ]
+    },
+
+
+    /* =====================================================
+       FISHING ROD
+    ====================================================== */
+
+    {
+        id: "minecraft:fishing_rod",
+
+        name: "Caña de pescar",
+
+        aliases: [
+            "caña de pescar",
+            "cana de pescar",
+            "fishing rod",
+            "fishing_rod"
+        ],
+
+        pattern: [
+            null,
+            null,
+            "minecraft:stick",
+
+            null,
+            "minecraft:stick",
+            "minecraft:string",
+
+            "minecraft:stick",
+            null,
+            "minecraft:string"
+        ]
+    },
+
+
+    /* =====================================================
+       LEATHER HELMET
+    ====================================================== */
+
+    {
+        id: "minecraft:leather_helmet",
+
+        name: "Casco de cuero",
+
+        aliases: [
+            "casco de cuero",
+            "casco cuero",
+            "leather helmet"
+        ],
+
+        pattern: [
+            "minecraft:leather",
+            "minecraft:leather",
+            "minecraft:leather",
+
+            "minecraft:leather",
+            null,
+            "minecraft:leather",
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       IRON HELMET
+    ====================================================== */
+
+    {
+        id: "minecraft:iron_helmet",
+
+        name: "Casco de hierro",
+
+        aliases: [
+            "casco de hierro",
+            "casco hierro",
+            "iron helmet"
+        ],
+
+        pattern: [
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+
+            "minecraft:iron_ingot",
+            null,
+            "minecraft:iron_ingot",
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       IRON CHESTPLATE
+    ====================================================== */
+
+    {
+        id: "minecraft:iron_chestplate",
+
+        name: "Pechera de hierro",
+
+        aliases: [
+            "pechera de hierro",
+            "armadura de hierro",
+            "iron chestplate"
+        ],
+
+        pattern: [
+            "minecraft:iron_ingot",
+            null,
+            "minecraft:iron_ingot",
+
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot"
+        ]
+    },
+
+
+    /* =====================================================
+       GLASS
+    ====================================================== */
+
+    {
+        id: "minecraft:glass",
+
+        name: "Cristal",
+
+        aliases: [
+            "cristal",
+            "vidrio",
+            "glass"
+        ],
+
+        pattern: [
+            "minecraft:glass",
+            "minecraft:glass",
+            "minecraft:glass",
+
+            "minecraft:glass",
+            "minecraft:glass",
+            "minecraft:glass",
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       PAPER
+    ====================================================== */
+
+    {
+        id: "minecraft:paper",
+
+        name: "Papel",
+
+        aliases: [
+            "papel",
+            "paper"
+        ],
+
+        pattern: [
+            "minecraft:sugar_cane",
+            "minecraft:sugar_cane",
+            "minecraft:sugar_cane",
+
+            null,
+            null,
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       BOOK
+    ====================================================== */
+
+    {
+        id: "minecraft:book",
+
+        name: "Libro",
+
+        aliases: [
+            "libro",
+            "book"
+        ],
+
+        pattern: [
+            "minecraft:paper",
+            "minecraft:paper",
+            null,
+
+            "minecraft:paper",
+            "minecraft:leather",
+            null,
+
+            null,
+            null,
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       CLOCK
+    ====================================================== */
+
+    {
+        id: "minecraft:clock",
+
+        name: "Reloj",
+
+        aliases: [
+            "reloj",
+            "clock"
+        ],
+
+        pattern: [
+            null,
+            "minecraft:gold_ingot",
+            null,
+
+            "minecraft:gold_ingot",
+            "minecraft:redstone",
+            "minecraft:gold_ingot",
+
+            null,
+            "minecraft:gold_ingot",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       COMPASS
+    ====================================================== */
+
+    {
+        id: "minecraft:compass",
+
+        name: "Brújula",
+
+        aliases: [
+            "brujula",
+            "brújula",
+            "compass"
+        ],
+
+        pattern: [
+            null,
+            "minecraft:iron_ingot",
+            null,
+
+            "minecraft:iron_ingot",
+            "minecraft:redstone",
+            "minecraft:iron_ingot",
+
+            null,
+            "minecraft:iron_ingot",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       TNT
+    ====================================================== */
+
+    {
+        id: "minecraft:tnt",
+
+        name: "TNT",
+
+        aliases: [
+            "tnt",
+            "dinamita"
+        ],
+
+        pattern: [
+            "minecraft:gunpowder",
+            "minecraft:sand",
+            "minecraft:gunpowder",
+
+            "minecraft:sand",
+            "minecraft:gunpowder",
+            "minecraft:sand",
+
+            "minecraft:gunpowder",
+            "minecraft:sand",
+            "minecraft:gunpowder"
+        ]
+    },
+
+
+    /* =====================================================
+       ENCHANTING TABLE
+    ====================================================== */
+
+    {
+        id: "minecraft:enchanting_table",
+
+        name: "Mesa de encantamientos",
+
+        aliases: [
+            "mesa de encantamientos",
+            "mesa de encantamiento",
+            "enchanting table"
+        ],
+
+        pattern: [
+            "minecraft:book",
+            "minecraft:diamond",
+            "minecraft:book",
+
+            "minecraft:obsidian",
+            "minecraft:obsidian",
+            "minecraft:obsidian",
+
+            "minecraft:obsidian",
+            "minecraft:obsidian",
+            "minecraft:obsidian"
+        ]
+    },
+
+
+    /* =====================================================
+       ANVIL
+    ====================================================== */
+
+    {
+        id: "minecraft:anvil",
+
+        name: "Yunque",
+
+        aliases: [
+            "yunque",
+            "anvil"
+        ],
+
+        pattern: [
+            "minecraft:iron_block",
+            "minecraft:iron_block",
+            "minecraft:iron_block",
+
+            null,
+            "minecraft:iron_ingot",
+            null,
+
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot",
+            "minecraft:iron_ingot"
+        ]
+    },
+
+
+    /* =====================================================
+       HOPPER
+    ====================================================== */
+
+    {
+        id: "minecraft:hopper",
+
+        name: "Tolva",
+
+        aliases: [
+            "tolva",
+            "hopper"
+        ],
+
+        pattern: [
+            "minecraft:iron_ingot",
+            null,
+            "minecraft:iron_ingot",
+
+            "minecraft:iron_ingot",
+            "minecraft:chest",
+            "minecraft:iron_ingot",
+
+            null,
+            "minecraft:iron_ingot",
+            null
+        ]
+    },
+
+
+    /* =====================================================
+       DISPENSER
+    ====================================================== */
+
+    {
+        id: "minecraft:dispenser",
+
+        name: "Dispensador",
+
+        aliases: [
+            "dispensador",
+            "dispenser"
+        ],
+
+        pattern: [
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+
+            "minecraft:cobblestone",
+            "minecraft:bow",
+            " ",
+
+            "minecraft:cobblestone",
+            "minecraft:redstone",
+            "minecraft:cobblestone"
+        ]
+    },
+
+
+    /* =====================================================
+       DROPPER
+    ====================================================== */
+
+    {
+        id: "minecraft:dropper",
+
+        name: "Soltador",
+
+        aliases: [
+            "soltador",
+            "dropper"
+        ],
+
+        pattern: [
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+            "minecraft:cobblestone",
+
+            "minecraft:cobblestone",
+            null,
+            "minecraft:cobblestone",
+
+            "minecraft:cobblestone",
+            "minecraft:redstone",
+            "minecraft:cobblestone"
+        ]
+    },
+
+
+    /* =====================================================
+       PISTON
+    ====================================================== */
+
+    {
+        id: "minecraft:piston",
+
+        name: "Pistón",
+
+        aliases: [
+            "piston",
+            "pistón",
+            "piston"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+
+            "minecraft:cobblestone",
+            "minecraft:iron_ingot",
+            "minecraft:cobblestone",
+
+            "minecraft:cobblestone",
+            "minecraft:redstone",
+            "minecraft:cobblestone"
+        ]
+    },
+
+
+    /* =====================================================
+       NOTE BLOCK
+    ====================================================== */
+
+    {
+        id: "minecraft:note_block",
+
+        name: "Bloque musical",
+
+        aliases: [
+            "bloque musical",
+            "note block"
+        ],
+
+        pattern: [
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+
+            "minecraft:oak_planks",
+            "minecraft:redstone",
+            "minecraft:oak_planks",
+
+            "minecraft:oak_planks",
+            "minecraft:oak_planks",
+            "minecraft:oak_planks"
+        ]
+    }
+
+];
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let currentRecipe = null;
+
+let previousRecipe = null;
+
+let locked = false;
+
+let lastMessageTime = 0;
+
+let twitchClient = null;
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const grid =
+    document.getElementById("grid");
+
+const result =
+    document.getElementById("result");
+
+const status =
+    document.getElementById("status");
+
+const answer =
+    document.getElementById("answer");
+
+const chatStatus =
+    document.getElementById("chatStatus");
+
+
+/* =========================================================
+   NORMALIZE TEXT
+========================================================= */
+
+function normalize(text) {
+
+    return String(text || "")
+
+        .toLowerCase()
+
+        .normalize("NFD")
+
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+
+        .replace(
+            /[^a-z0-9_ ]/g,
+            ""
+        )
+
+        .replace(
+            /\s+/g,
+            " "
+        )
+
+        .trim();
+
+}
+
+
+/* =========================================================
+   RANDOM RECIPE
+========================================================= */
+
+function getRandomRecipe() {
+
+    if (RECIPES.length === 0) {
+
+        return null;
+
+    }
+
+
+    let recipe;
+
+
+    do {
+
+        recipe =
+            RECIPES[
+                Math.floor(
+                    Math.random() *
+                    RECIPES.length
+                )
+            ];
+
+    }
+
+    while (
+
+        RECIPES.length > 1 &&
+
+        recipe.id ===
+        previousRecipe
+
+    );
+
+
+    previousRecipe =
+        recipe.id;
+
+
+    return recipe;
+
+}
+
+
+/* =========================================================
+   RENDER RECIPE
+========================================================= */
+
+function renderRecipe(recipe) {
+
+    grid.innerHTML = "";
+
+
+    recipe.pattern.forEach(
+        (itemId) => {
+
+            const slot =
+                document.createElement(
+                    "div"
+                );
+
+            slot.className =
+                "slot";
+
+
+            /*
+                Un slot vacío.
+            */
+
+            if (
+                !itemId ||
+                itemId === " "
+            ) {
+
+                grid.appendChild(
+                    slot
+                );
+
+                return;
+
+            }
+
+
+            const img =
+                document.createElement(
+                    "img"
+                );
+
+            img.className =
+                "item";
+
+
+            img.src =
+                getTexture(
+                    itemId
+                );
+
+
+            img.alt =
+                itemId;
+
+
+            img.onerror =
+                function() {
+
+                    /*
+                        Si una textura no existe,
+                        ocultamos la imagen en vez
+                        de romper el widget.
+                    */
+
+                    this.style.display =
+                        "none";
+
+                };
+
+
+            slot.appendChild(
+                img
+            );
+
+
+            grid.appendChild(
+                slot
+            );
+
+        }
+    );
+
+
+    /*
+        Ocultar resultado.
+    */
+
+    result.style.display =
+        "none";
+
+
+    result.classList.remove(
+        "result-show"
+    );
+
+
+    answer.textContent =
+        "";
+
+
+    answer.className =
+        "answer";
+
+
+    status.textContent =
+        "Esperando respuesta del chat...";
+
+}
+
+
+/* =========================================================
+   NEW RECIPE
+========================================================= */
+
+function newRecipe() {
+
+    locked = false;
+
+
+    currentRecipe =
+        getRandomRecipe();
+
+
+    if (!currentRecipe) {
+
+        status.textContent =
+            "No hay recetas disponibles.";
+
+        return;
+
+    }
+
+
+    renderRecipe(
+        currentRecipe
+    );
+
+}
+
+
+/* =========================================================
+   CHECK ANSWER
+========================================================= */
+
+function checkAnswer(
+    username,
+    message
+) {
+
+    /*
+        Cooldown de mensajes.
+    */
+
+    const now =
+        Date.now();
+
+
+    if (
+        now -
+        lastMessageTime <
+        MESSAGE_COOLDOWN
+    ) {
+
+        return;
+
+    }
+
+
+    lastMessageTime =
+        now;
+
+
+    /*
+        No procesar mientras
+        estamos cambiando de receta.
+    */
+
+    if (
+        locked ||
+        !currentRecipe
+    ) {
+
+        return;
+
+    }
+
+
+    const cleanMessage =
+        normalize(
+            message
+        );
+
+
+    const validAnswers = [
+        currentRecipe.name,
+        ...currentRecipe.aliases
+    ]
+        .map(normalize);
+
+
+    /*
+        También permitimos que el usuario
+        escriba el nombre dentro de una
+        frase corta.
+    */
+
+    const isCorrect =
+        validAnswers.some(
+            answerText =>
+                cleanMessage ===
+                answerText
+        );
+
+
+    if (!isCorrect) {
+
+        return;
+
+    }
+
+
+    correctAnswer(
+        username
+    );
+
+}
+
+
+/* =========================================================
+   CORRECT ANSWER
+========================================================= */
+
+function correctAnswer(
+    username
+) {
+
+    locked = true;
+
+
+    /*
+        Mostrar resultado.
+    */
+
+    result.src =
+        getTexture(
+            currentRecipe.id
+        );
+
+
+    result.alt =
+        currentRecipe.name;
+
+
+    result.style.display =
+        "block";
+
+
+    result.classList.add(
+        "result-show"
+    );
+
+
+    /*
+        Mostrar ganador.
+    */
+
+    answer.textContent =
+        username +
+        " acertó: " +
+        currentRecipe.name;
+
+
+    answer.className =
+        "answer correct winner";
+
+
+    /*
+        Countdown.
+    */
+
+    let remaining =
+        NEXT_RECIPE_COOLDOWN;
+
+
+    function updateCountdown() {
+
+        const seconds =
+            Math.ceil(
+                remaining / 1000
+            );
+
+
+        status.textContent =
+            "Nuevo crafteo en " +
+            seconds +
+            "...";
+
+    }
+
+
+    updateCountdown();
+
+
+    const interval =
+        setInterval(
+            () => {
+
+                remaining -= 1000;
+
+
+                if (
+                    remaining <= 0
+                ) {
+
+                    clearInterval(
+                        interval
+                    );
+
+
+                    newRecipe();
+
+
+                    return;
+
+                }
+
+
+                updateCountdown();
+
+            },
+            1000
+        );
+
+}
+
+
+/* =========================================================
+   TWITCH CONNECTION
+========================================================= */
+
+function connectTwitch() {
+
+    /*
+        Si no recibimos canal desde Pogly.
+    */
+
+    if (!CHANNEL) {
+
+        status.textContent =
+            "Escribe un canal de Twitch en Pogly.";
+
+        chatStatus.textContent =
+            "Twitch: sin canal";
+
+        return;
+
+    }
+
+
+    /*
+        Comprobar que tmi.js cargó.
+    */
+
+    if (
+        typeof tmi ===
+        "undefined"
+    ) {
+
+        status.textContent =
+            "No se pudo cargar Twitch.";
+
+        chatStatus.textContent =
+            "Twitch: error";
+
+        return;
+
+    }
+
+
+    /*
+        Crear cliente.
+    */
+
+    twitchClient =
+        new tmi.Client({
+
+            channels: [
+                CHANNEL
+            ]
+
+        });
+
+
+    /*
+        Conexión.
+    */
+
+    twitchClient
+        .connect()
+
+        .then(
+            () => {
+
+                status.textContent =
+                    "Esperando respuesta del chat...";
+
+                chatStatus.textContent =
+                    "● Twitch: " +
+                    CHANNEL;
+
+            }
+        )
+
+        .catch(
+            (error) => {
+
+                console.error(
+                    error
+                );
+
+
+                status.textContent =
+                    "No se pudo conectar al chat.";
+
+                chatStatus.textContent =
+                    "Twitch: error";
+
+            }
+        );
+
+
+    /*
+        Mensajes.
+    */
+
+    twitchClient.on(
+        "message",
+        (
+            channel,
+            tags,
+            message,
+            self
+        ) => {
+
+            /*
+                Ignorar nuestros propios mensajes.
+            */
+
+            if (self) {
+
+                return;
+
+            }
+
+
+            const username =
+                tags[
+                    "display-name"
+                ] ||
+                tags.username ||
+                "Jugador";
+
+
+            checkAnswer(
+                username,
+                message
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+
+/*
+    IMPORTANTE:
+
+    Esto hace que cada vez que el
+    iframe se cargue/refresque se
+    seleccione una receta nueva.
+*/
+
+newRecipe();
+
+
+/*
+    Después conectamos Twitch.
+*/
+
+connectTwitch();
+
+
+</script>
+
+</body>
+</html>
