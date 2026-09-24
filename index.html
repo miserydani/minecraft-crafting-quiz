@@ -11,7 +11,7 @@
 
 <title>Minecraft Crafting Quiz</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
 
 <style>
 
@@ -51,7 +51,7 @@ body {
 
 #minecraft {
 
-    width: 420px;
+    width: 350px;
     height: 310px;
 
     position: relative;
@@ -126,17 +126,13 @@ body {
         "Courier New",
         monospace;
 
-    font-size: 17px;
+    font-size: 15px;
 
-    font-weight: 700;
+    font-weight: 400;
 
     color: #404040;
 
     text-shadow:
-        1px 0 0 #404040,
-        -1px 0 0 #404040,
-        0 1px 0 #404040,
-        0 -1px 0 #404040,
         1px 1px 0 #ffffff;
 
     letter-spacing: .2px;
@@ -442,17 +438,13 @@ body {
         "Courier New",
         monospace;
 
-    font-size: 12px;
+    font-size: 10px;
 
-    font-weight: 700;
+    font-weight: 400;
 
     color: #404040;
 
     text-shadow:
-        1px 0 0 #404040,
-        -1px 0 0 #404040,
-        0 1px 0 #404040,
-        0 -1px 0 #404040,
         1px 1px 0 #ffffff;
 
 }
@@ -468,7 +460,7 @@ body {
 
     min-height: 16px;
 
-    font-size: 9px;
+    font-size: 8px;
 
     color: #404040;
 
@@ -2829,6 +2821,15 @@ function connectTwitch() {
 
     twitchClient =
         new tmi.Client({
+
+            options: {
+                debug: false
+            },
+
+            connection: {
+                secure: true,
+                reconnect: true
+            },
 
             channels: [
                 CHANNEL
