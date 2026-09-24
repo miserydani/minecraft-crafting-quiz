@@ -11,7 +11,7 @@
 
 <title>Minecraft Crafting Quiz</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
+<script src="https://github.com/tmijs/tmi.js/releases/download/v1.8.5/tmi.min.js"></script>
 
 <style>
 
@@ -859,8 +859,19 @@ const params =
     );
 
 
+const requestedChannel =
+    params.get("channel");
+
+
 let CHANNEL =
-    params.get("channel") || "";
+    (
+        !requestedChannel ||
+        requestedChannel === "{channel}" ||
+        requestedChannel.includes("{") ||
+        requestedChannel.includes("}")
+    )
+        ? "rubius"
+        : requestedChannel;
 
 
 CHANNEL =
@@ -2779,13 +2790,16 @@ function correctAnswer(
 function connectTwitch() {
 
     /*
-        Si no recibimos canal desde Pogly.
+        Conexión compatible con Pogly.
+
+        Si Pogly no manda ?channel= o manda literalmente
+        {channel}, CHANNEL ya habrá quedado en "rubius".
     */
 
     if (!CHANNEL) {
 
         status.textContent =
-            "Escribe un canal de Twitch en Pogly.";
+            "No se encontró el canal de Twitch.";
 
         chatStatus.textContent =
             "Twitch: sin canal";
@@ -2816,7 +2830,31 @@ function connectTwitch() {
 
 
     /*
-        Crear cliente.
+        Evitar conexiones duplicadas.
+    */
+
+    if (twitchClient) {
+
+        try {
+
+            twitchClient.disconnect();
+
+        } catch (e) {
+
+            console.warn(
+                "No se pudo cerrar la conexión anterior.",
+                e
+            );
+
+        }
+
+        twitchClient = null;
+
+    }
+
+
+    /*
+        Cliente TMI anónimo para leer el chat.
     */
 
     twitchClient =
@@ -2828,7 +2866,8 @@ function connectTwitch() {
 
             connection: {
                 secure: true,
-                reconnect: true
+                reconnect: true,
+                timeout: 20000
             },
 
             channels: [
@@ -2839,45 +2878,80 @@ function connectTwitch() {
 
 
     /*
-        Conexión.
+        Estado de conexión.
     */
 
-    twitchClient
-        .connect()
+    twitchClient.on(
+        "connecting",
+        () => {
 
-        .then(
-            () => {
+            chatStatus.textContent =
+                "● Twitch: conectando...";
 
-                status.textContent =
-                    "Esperando respuesta del chat...";
-
-                chatStatus.textContent =
-                    "● Twitch: " +
-                    CHANNEL;
-
-            }
-        )
-
-        .catch(
-            (error) => {
-
-                console.error(
-                    error
-                );
+        }
+    );
 
 
-                status.textContent =
-                    "No se pudo conectar al chat.";
+    twitchClient.on(
+        "connected",
+        (address, port) => {
 
-                chatStatus.textContent =
-                    "Twitch: error";
+            status.textContent =
+                "Esperando respuesta del chat...";
 
-            }
-        );
+            chatStatus.textContent =
+                "● Twitch: " +
+                CHANNEL;
+
+        }
+    );
+
+
+    twitchClient.on(
+        "disconnected",
+        (reason) => {
+
+            console.warn(
+                "Twitch desconectado:",
+                reason
+            );
+
+            chatStatus.textContent =
+                "● Twitch: reconectando...";
+
+        }
+    );
+
+
+    twitchClient.on(
+        "reconnect",
+        () => {
+
+            chatStatus.textContent =
+                "● Twitch: reconectando...";
+
+        }
+    );
+
+
+    twitchClient.on(
+        "notice",
+        (channel, msgid, message) => {
+
+            console.warn(
+                "Twitch notice:",
+                msgid,
+                message
+            );
+
+        }
+    );
 
 
     /*
-        Mensajes.
+        Mensajes del chat.
+
+        Solo un listener.
     */
 
     twitchClient.on(
@@ -2889,10 +2963,6 @@ function connectTwitch() {
             self
         ) => {
 
-            /*
-                Ignorar nuestros propios mensajes.
-            */
-
             if (self) {
 
                 return;
@@ -2901,9 +2971,7 @@ function connectTwitch() {
 
 
             const username =
-                tags[
-                    "display-name"
-                ] ||
+                tags["display-name"] ||
                 tags.username ||
                 "Jugador";
 
@@ -2915,6 +2983,30 @@ function connectTwitch() {
 
         }
     );
+
+
+    /*
+        Conectar.
+    */
+
+    twitchClient
+        .connect()
+        .catch(
+            (error) => {
+
+                console.error(
+                    "Error conectando a Twitch:",
+                    error
+                );
+
+                status.textContent =
+                    "No se pudo conectar al chat.";
+
+                chatStatus.textContent =
+                    "Twitch: error";
+
+            }
+        );
 
 }
 
