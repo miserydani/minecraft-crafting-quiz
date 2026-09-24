@@ -926,6 +926,10 @@ const MINECRAFT_VERSION = "26.3";
     textures/item/diamond.png
 */
 
+const TEXTURE_BASE =
+    "https://cdn.jsdelivr.net/npm/minecraft-textures@26.3.0/assets/";
+
+
 function getTexture(id) {
 
     if (!id) {
@@ -943,11 +947,14 @@ function getTexture(id) {
             );
 
 
+    /*
+        Texturas vanilla de Minecraft.
+        Se sirven desde el paquete minecraft-textures,
+        que incluye los PNG de los items de Minecraft 26.3.
+    */
+
     return (
-        "https://mcasset.cloud/" +
-        MINECRAFT_VERSION +
-        "/assets/minecraft/" +
-        "textures/item/" +
+        TEXTURE_BASE +
         clean +
         ".png"
     );
@@ -2501,10 +2508,31 @@ function renderRecipe(recipe) {
                 function() {
 
                     /*
-                        Si una textura no existe,
-                        ocultamos la imagen en vez
-                        de romper el widget.
+                        Respaldo: si el CDN principal falla,
+                        intentamos MC Assets.
                     */
+
+                    if (!this.dataset.fallbackTried) {
+
+                        this.dataset.fallbackTried =
+                            "1";
+
+                        const clean =
+                            itemId
+                                .replace(
+                                    "minecraft:",
+                                    ""
+                                );
+
+                        this.src =
+                            "https://mcasset.cloud/26.3/assets/minecraft/textures/item/" +
+                            clean +
+                            ".png";
+
+                        return;
+
+                    }
+
 
                     this.style.display =
                         "none";
@@ -2696,6 +2724,40 @@ function correctAnswer(
         );
 
 
+    result.dataset.fallbackTried =
+        "";
+
+
+    result.onerror =
+        function() {
+
+            if (!this.dataset.fallbackTried) {
+
+                this.dataset.fallbackTried =
+                    "1";
+
+                const clean =
+                    currentRecipe.id
+                        .replace(
+                            "minecraft:",
+                            ""
+                        );
+
+                this.src =
+                    "https://mcasset.cloud/26.3/assets/minecraft/textures/item/" +
+                    clean +
+                    ".png";
+
+                return;
+
+            }
+
+            this.style.display =
+                "none";
+
+        };
+
+
     result.alt =
         currentRecipe.name;
 
@@ -2789,13 +2851,6 @@ function correctAnswer(
 
 function connectTwitch() {
 
-    /*
-        Conexión compatible con Pogly.
-
-        Si Pogly no manda ?channel= o manda literalmente
-        {channel}, CHANNEL ya habrá quedado en "rubius".
-    */
-
     if (!CHANNEL) {
 
         status.textContent =
@@ -2808,10 +2863,6 @@ function connectTwitch() {
 
     }
 
-
-    /*
-        Comprobar que tmi.js cargó.
-    */
 
     if (
         typeof tmi ===
@@ -2828,10 +2879,6 @@ function connectTwitch() {
 
     }
 
-
-    /*
-        Evitar conexiones duplicadas.
-    */
 
     if (twitchClient) {
 
@@ -2853,10 +2900,6 @@ function connectTwitch() {
     }
 
 
-    /*
-        Cliente TMI anónimo para leer el chat.
-    */
-
     twitchClient =
         new tmi.Client({
 
@@ -2877,10 +2920,6 @@ function connectTwitch() {
         });
 
 
-    /*
-        Estado de conexión.
-    */
-
     twitchClient.on(
         "connecting",
         () => {
@@ -2894,7 +2933,7 @@ function connectTwitch() {
 
     twitchClient.on(
         "connected",
-        (address, port) => {
+        () => {
 
             status.textContent =
                 "Esperando respuesta del chat...";
@@ -2935,26 +2974,6 @@ function connectTwitch() {
 
 
     twitchClient.on(
-        "notice",
-        (channel, msgid, message) => {
-
-            console.warn(
-                "Twitch notice:",
-                msgid,
-                message
-            );
-
-        }
-    );
-
-
-    /*
-        Mensajes del chat.
-
-        Solo un listener.
-    */
-
-    twitchClient.on(
         "message",
         (
             channel,
@@ -2984,10 +3003,6 @@ function connectTwitch() {
         }
     );
 
-
-    /*
-        Conectar.
-    */
 
     twitchClient
         .connect()
