@@ -11,7 +11,7 @@
 
 <title>Minecraft Crafting Quiz</title>
 
-<script src="https://github.com/tmijs/tmi.js/releases/download/v1.8.5/tmi.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
 
 <style>
 
@@ -614,14 +614,14 @@ body {
 
 .participant-skin {
 
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
 
     object-fit: cover;
 
     image-rendering: pixelated;
 
-    flex: 0 0 22px;
+    flex: 0 0 20px;
 
 }
 
@@ -859,19 +859,8 @@ const params =
     );
 
 
-const requestedChannel =
-    params.get("channel");
-
-
 let CHANNEL =
-    (
-        !requestedChannel ||
-        requestedChannel === "{channel}" ||
-        requestedChannel.includes("{") ||
-        requestedChannel.includes("}")
-    )
-        ? "rubius"
-        : requestedChannel;
+    params.get("channel") || "";
 
 
 CHANNEL =
@@ -898,7 +887,7 @@ const MESSAGE_COOLDOWN = 700;
     hasta que aparece otra receta.
 */
 
-const NEXT_RECIPE_COOLDOWN = 2500;
+const NEXT_RECIPE_COOLDOWN = 5000;
 
 
 /*
@@ -926,94 +915,6 @@ const MINECRAFT_VERSION = "26.3";
     textures/item/diamond.png
 */
 
-/*
-    =========================================================
-    MINECRAFT ITEM TEXTURES
-    =========================================================
-
-    Cargamos los PNG vanilla desde el manifest oficial del
-    paquete minecraft-textures. El manifest legacy contiene
-    las imágenes como data:image/png;base64,..., así que
-    el navegador no depende de que una imagen externa
-    permita CORS.
-*/
-
-const ITEM_TEXTURES = new Map();
-
-const TEXTURE_MANIFEST_URL =
-    "https://cdn.jsdelivr.net/npm/minecraft-textures@26.3.0/dist/textures/json/26.3.json";
-
-
-async function loadItemTextures() {
-
-    try {
-
-        const response =
-            await fetch(
-                TEXTURE_MANIFEST_URL,
-                {
-                    cache: "force-cache"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP " + response.status
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            data &&
-            Array.isArray(data.items)
-        ) {
-
-            data.items.forEach(
-                item => {
-
-                    if (
-                        item &&
-                        item.id &&
-                        item.texture
-                    ) {
-
-                        ITEM_TEXTURES.set(
-                            item.id,
-                            item.texture
-                        );
-
-                    }
-
-                }
-            );
-
-        }
-
-
-        console.log(
-            "Texturas Minecraft cargadas:",
-            ITEM_TEXTURES.size
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "No se pudo cargar el manifest de texturas.",
-            error
-        );
-
-    }
-
-}
-
-
 function getTexture(id) {
 
     if (!id) {
@@ -1031,34 +932,11 @@ function getTexture(id) {
             );
 
 
-    const minecraftId =
-        "minecraft:" +
-        clean;
-
-
-    /*
-        Preferimos la imagen embebida en base64.
-    */
-
-    if (
-        ITEM_TEXTURES.has(
-            minecraftId
-        )
-    ) {
-
-        return ITEM_TEXTURES.get(
-            minecraftId
-        );
-
-    }
-
-
-    /*
-        Respaldo visual externo.
-    */
-
     return (
-        "https://mcasset.cloud/26.3/assets/minecraft/textures/item/" +
+        "https://mcasset.cloud/" +
+        MINECRAFT_VERSION +
+        "/assets/minecraft/" +
+        "textures/item/" +
         clean +
         ".png"
     );
@@ -1083,1176 +961,557 @@ function getTexture(id) {
 
 const RECIPES = [
 
-    /* =====================================================
-       DIAMOND SWORD
-    ====================================================== */
-
     {
         id: "minecraft:diamond_sword",
-
         name: "Espada de diamante",
-
-        aliases: [
-            "espada de diamante",
-            "espada diamante",
-            "diamond sword",
-            "diamond_sword"
-        ],
-
+        aliases: ["espada de diamante", "espada diamante", "diamond sword", "diamond_sword"],
         pattern: [
-            "minecraft:diamond",
-            "minecraft:diamond",
-            null,
-
-            null,
-            "minecraft:diamond",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:diamond", "minecraft:diamond", null,
+            null, "minecraft:diamond", null,
+            null, "minecraft:stick", null
         ]
     },
-
-
-    /* =====================================================
-       IRON SWORD
-    ====================================================== */
 
     {
         id: "minecraft:iron_sword",
-
         name: "Espada de hierro",
-
-        aliases: [
-            "espada de hierro",
-            "espada hierro",
-            "iron sword",
-            "iron_sword"
-        ],
-
+        aliases: ["espada de hierro", "espada hierro", "iron sword", "iron_sword"],
         pattern: [
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-            null,
-
-            null,
-            "minecraft:iron_ingot",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:iron_ingot", "minecraft:iron_ingot", null,
+            null, "minecraft:iron_ingot", null,
+            null, "minecraft:stick", null
         ]
     },
-
-
-    /* =====================================================
-       GOLD SWORD
-    ====================================================== */
 
     {
         id: "minecraft:golden_sword",
-
         name: "Espada de oro",
-
-        aliases: [
-            "espada de oro",
-            "espada oro",
-            "gold sword",
-            "golden sword",
-            "golden_sword"
-        ],
-
+        aliases: ["espada de oro", "espada oro", "gold sword", "golden sword", "golden_sword"],
         pattern: [
-            "minecraft:gold_ingot",
-            "minecraft:gold_ingot",
-            null,
-
-            null,
-            "minecraft:gold_ingot",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:gold_ingot", "minecraft:gold_ingot", null,
+            null, "minecraft:gold_ingot", null,
+            null, "minecraft:stick", null
         ]
     },
-
-
-    /* =====================================================
-       STONE SWORD
-    ====================================================== */
 
     {
         id: "minecraft:stone_sword",
-
         name: "Espada de piedra",
-
-        aliases: [
-            "espada de piedra",
-            "espada piedra",
-            "stone sword",
-            "stone_sword"
-        ],
-
+        aliases: ["espada de piedra", "espada piedra", "stone sword", "stone_sword"],
         pattern: [
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-            null,
-
-            null,
-            "minecraft:cobblestone",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:cobblestone", "minecraft:cobblestone", null,
+            null, "minecraft:cobblestone", null,
+            null, "minecraft:stick", null
         ]
     },
 
-
-    /* =====================================================
-       DIAMOND PICKAXE
-    ====================================================== */
+    {
+        id: "minecraft:wooden_sword",
+        name: "Espada de madera",
+        aliases: ["espada de madera", "espada madera", "wooden sword", "wood sword", "wooden_sword"],
+        pattern: [
+            "minecraft:oak_planks", "minecraft:oak_planks", null,
+            null, "minecraft:oak_planks", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
     {
         id: "minecraft:diamond_pickaxe",
-
         name: "Pico de diamante",
-
-        aliases: [
-            "pico de diamante",
-            "pico diamante",
-            "diamond pickaxe",
-            "diamond_pickaxe"
-        ],
-
+        aliases: ["pico de diamante", "pico diamante", "diamond pickaxe", "diamond_pickaxe"],
         pattern: [
-            "minecraft:diamond",
-            "minecraft:diamond",
-            "minecraft:diamond",
-
-            null,
-            "minecraft:stick",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:diamond", "minecraft:diamond", "minecraft:diamond",
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
         ]
     },
-
-
-    /* =====================================================
-       IRON PICKAXE
-    ====================================================== */
 
     {
         id: "minecraft:iron_pickaxe",
-
         name: "Pico de hierro",
-
-        aliases: [
-            "pico de hierro",
-            "pico hierro",
-            "iron pickaxe",
-            "iron_pickaxe"
-        ],
-
+        aliases: ["pico de hierro", "pico hierro", "iron pickaxe", "iron_pickaxe"],
         pattern: [
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-
-            null,
-            "minecraft:stick",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:iron_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot",
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
         ]
     },
 
+    {
+        id: "minecraft:golden_pickaxe",
+        name: "Pico de oro",
+        aliases: ["pico de oro", "pico oro", "gold pickaxe", "golden pickaxe", "golden_pickaxe"],
+        pattern: [
+            "minecraft:gold_ingot", "minecraft:gold_ingot", "minecraft:gold_ingot",
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
-    /* =====================================================
-       DIAMOND AXE
-    ====================================================== */
+    {
+        id: "minecraft:stone_pickaxe",
+        name: "Pico de piedra",
+        aliases: ["pico de piedra", "pico piedra", "stone pickaxe", "stone_pickaxe"],
+        pattern: [
+            "minecraft:cobblestone", "minecraft:cobblestone", "minecraft:cobblestone",
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
+
+    {
+        id: "minecraft:wooden_pickaxe",
+        name: "Pico de madera",
+        aliases: ["pico de madera", "pico madera", "wooden pickaxe", "wood pickaxe", "wooden_pickaxe"],
+        pattern: [
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks",
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
     {
         id: "minecraft:diamond_axe",
-
         name: "Hacha de diamante",
-
-        aliases: [
-            "hacha de diamante",
-            "hacha diamante",
-            "diamond axe",
-            "diamond_axe"
-        ],
-
+        aliases: ["hacha de diamante", "hacha diamante", "diamond axe", "diamond_axe"],
         pattern: [
-            "minecraft:diamond",
-            "minecraft:diamond",
-            null,
-
-            "minecraft:diamond",
-            "minecraft:stick",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:diamond", "minecraft:diamond", null,
+            "minecraft:diamond", "minecraft:stick", null,
+            null, "minecraft:stick", null
         ]
     },
 
+    {
+        id: "minecraft:iron_axe",
+        name: "Hacha de hierro",
+        aliases: ["hacha de hierro", "hacha hierro", "iron axe", "iron_axe"],
+        pattern: [
+            "minecraft:iron_ingot", "minecraft:iron_ingot", null,
+            "minecraft:iron_ingot", "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
-    /* =====================================================
-       DIAMOND SHOVEL
-    ====================================================== */
+    {
+        id: "minecraft:golden_axe",
+        name: "Hacha de oro",
+        aliases: ["hacha de oro", "hacha oro", "gold axe", "golden axe", "golden_axe"],
+        pattern: [
+            "minecraft:gold_ingot", "minecraft:gold_ingot", null,
+            "minecraft:gold_ingot", "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
+
+    {
+        id: "minecraft:stone_axe",
+        name: "Hacha de piedra",
+        aliases: ["hacha de piedra", "hacha piedra", "stone axe", "stone_axe"],
+        pattern: [
+            "minecraft:cobblestone", "minecraft:cobblestone", null,
+            "minecraft:cobblestone", "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
+
+    {
+        id: "minecraft:wooden_axe",
+        name: "Hacha de madera",
+        aliases: ["hacha de madera", "hacha madera", "wooden axe", "wood axe", "wooden_axe"],
+        pattern: [
+            "minecraft:oak_planks", "minecraft:oak_planks", null,
+            "minecraft:oak_planks", "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
     {
         id: "minecraft:diamond_shovel",
-
         name: "Pala de diamante",
-
-        aliases: [
-            "pala de diamante",
-            "pala diamante",
-            "diamond shovel",
-            "diamond_shovel"
-        ],
-
+        aliases: ["pala de diamante", "pala diamante", "diamond shovel", "diamond_shovel"],
         pattern: [
-            "minecraft:diamond",
-            null,
-            null,
-
-            "minecraft:stick",
-            null,
-            null,
-
-            "minecraft:stick",
-            null,
-            null
+            null, "minecraft:diamond", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
         ]
     },
 
+    {
+        id: "minecraft:iron_shovel",
+        name: "Pala de hierro",
+        aliases: ["pala de hierro", "pala hierro", "iron shovel", "iron_shovel"],
+        pattern: [
+            null, "minecraft:iron_ingot", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
-    /* =====================================================
-       DIAMOND HOE
-    ====================================================== */
+    {
+        id: "minecraft:stone_shovel",
+        name: "Pala de piedra",
+        aliases: ["pala de piedra", "pala piedra", "stone shovel", "stone_shovel"],
+        pattern: [
+            null, "minecraft:cobblestone", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
+
+    {
+        id: "minecraft:wooden_shovel",
+        name: "Pala de madera",
+        aliases: ["pala de madera", "pala madera", "wooden shovel", "wood shovel", "wooden_shovel"],
+        pattern: [
+            null, "minecraft:oak_planks", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
     {
         id: "minecraft:diamond_hoe",
-
         name: "Azada de diamante",
-
-        aliases: [
-            "azada de diamante",
-            "azada diamante",
-            "diamond hoe",
-            "diamond_hoe"
-        ],
-
+        aliases: ["azada de diamante", "azada diamante", "diamond hoe", "diamond_hoe"],
         pattern: [
-            "minecraft:diamond",
-            "minecraft:diamond",
-            null,
-
-            null,
-            "minecraft:stick",
-            null,
-
-            null,
-            "minecraft:stick",
-            null
+            "minecraft:diamond", "minecraft:diamond", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
         ]
     },
 
+    {
+        id: "minecraft:iron_hoe",
+        name: "Azada de hierro",
+        aliases: ["azada de hierro", "azada hierro", "iron hoe", "iron_hoe"],
+        pattern: [
+            "minecraft:iron_ingot", "minecraft:iron_ingot", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
-    /* =====================================================
-       CRAFTING TABLE
-    ====================================================== */
+    {
+        id: "minecraft:stone_hoe",
+        name: "Azada de piedra",
+        aliases: ["azada de piedra", "azada piedra", "stone hoe", "stone_hoe"],
+        pattern: [
+            "minecraft:cobblestone", "minecraft:cobblestone", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
+
+    {
+        id: "minecraft:wooden_hoe",
+        name: "Azada de madera",
+        aliases: ["azada de madera", "azada madera", "wooden hoe", "wood hoe", "wooden_hoe"],
+        pattern: [
+            "minecraft:oak_planks", "minecraft:oak_planks", null,
+            null, "minecraft:stick", null,
+            null, "minecraft:stick", null
+        ]
+    },
 
     {
         id: "minecraft:crafting_table",
-
         name: "Mesa de crafteo",
-
-        aliases: [
-            "mesa de crafteo",
-            "mesa de trabajo",
-            "crafting table",
-            "crafting_table"
-        ],
-
+        aliases: ["mesa de crafteo", "mesa de trabajo", "crafting table", "crafting_table"],
         pattern: [
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            null,
-
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            null,
-
-            null,
-            null,
-            null
+            "minecraft:oak_planks", "minecraft:oak_planks", null,
+            "minecraft:oak_planks", "minecraft:oak_planks", null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       FURNACE
-    ====================================================== */
 
     {
         id: "minecraft:furnace",
-
         name: "Horno",
-
-        aliases: [
-            "horno",
-            "furnace"
-        ],
-
+        aliases: ["horno", "furnace"],
         pattern: [
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-
-            "minecraft:cobblestone",
-            null,
-            "minecraft:cobblestone",
-
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-            "minecraft:cobblestone"
+            "minecraft:cobblestone", "minecraft:cobblestone", "minecraft:cobblestone",
+            "minecraft:cobblestone", null, "minecraft:cobblestone",
+            "minecraft:cobblestone", "minecraft:cobblestone", "minecraft:cobblestone"
         ]
     },
-
-
-    /* =====================================================
-       CHEST
-    ====================================================== */
 
     {
         id: "minecraft:chest",
-
         name: "Cofre",
-
-        aliases: [
-            "cofre",
-            "chest"
-        ],
-
+        aliases: ["cofre", "chest"],
         pattern: [
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-
-            "minecraft:oak_planks",
-            null,
-            "minecraft:oak_planks",
-
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks"
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks",
+            "minecraft:oak_planks", null, "minecraft:oak_planks",
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks"
         ]
     },
-
-
-    /* =====================================================
-       BARREL
-    ====================================================== */
 
     {
         id: "minecraft:barrel",
-
         name: "Barril",
-
-        aliases: [
-            "barril",
-            "barrel"
-        ],
-
+        aliases: ["barril", "barrel"],
         pattern: [
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-
-            "minecraft:oak_planks",
-            null,
-            "minecraft:oak_planks",
-
-            "minecraft:oak_slab",
-            "minecraft:oak_slab",
-            "minecraft:oak_slab"
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks",
+            "minecraft:oak_planks", null, "minecraft:oak_planks",
+            "minecraft:oak_slab", "minecraft:oak_slab", "minecraft:oak_slab"
         ]
     },
-
-
-    /* =====================================================
-       TORCH
-    ====================================================== */
 
     {
         id: "minecraft:torch",
-
         name: "Antorcha",
-
-        aliases: [
-            "antorcha",
-            "torch"
-        ],
-
+        aliases: ["antorcha", "torch"],
         pattern: [
-            null,
-            "minecraft:coal",
-            null,
-
-            null,
-            "minecraft:stick",
-            null,
-
-            null,
-            null,
-            null
+            null, "minecraft:coal", null,
+            null, "minecraft:stick", null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       LADDER
-    ====================================================== */
 
     {
         id: "minecraft:ladder",
-
         name: "Escalera",
-
-        aliases: [
-            "escalera",
-            "ladder"
-        ],
-
+        aliases: ["escalera", "ladder"],
         pattern: [
-            "minecraft:stick",
-            null,
-            "minecraft:stick",
-
-            "minecraft:stick",
-            "minecraft:stick",
-            "minecraft:stick",
-
-            "minecraft:stick",
-            null,
-            "minecraft:stick"
+            "minecraft:stick", null, "minecraft:stick",
+            "minecraft:stick", "minecraft:stick", "minecraft:stick",
+            "minecraft:stick", null, "minecraft:stick"
         ]
     },
-
-
-    /* =====================================================
-       STICK
-    ====================================================== */
 
     {
         id: "minecraft:stick",
-
         name: "Palo",
-
-        aliases: [
-            "palo",
-            "stick"
-        ],
-
+        aliases: ["palo", "stick"],
         pattern: [
-            "minecraft:oak_planks",
-            null,
-            null,
-
-            "minecraft:oak_planks",
-            null,
-            null,
-
-            null,
-            null,
-            null
+            "minecraft:oak_planks", null, null,
+            "minecraft:oak_planks", null, null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       BOWL
-    ====================================================== */
 
     {
         id: "minecraft:bowl",
-
         name: "Cuenco",
-
-        aliases: [
-            "cuenco",
-            "bowl"
-        ],
-
+        aliases: ["cuenco", "bowl"],
         pattern: [
-            "minecraft:oak_planks",
-            null,
-            "minecraft:oak_planks",
-
-            null,
-            "minecraft:oak_planks",
-            null,
-
-            null,
-            null,
-            null
+            "minecraft:oak_planks", null, "minecraft:oak_planks",
+            null, "minecraft:oak_planks", null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       BUCKET
-    ====================================================== */
 
     {
         id: "minecraft:bucket",
-
         name: "Cubo",
-
-        aliases: [
-            "cubo",
-            "bucket"
-        ],
-
+        aliases: ["cubo", "bucket"],
         pattern: [
-            "minecraft:iron_ingot",
-            null,
-            "minecraft:iron_ingot",
-
-            null,
-            "minecraft:iron_ingot",
-            null,
-
-            null,
-            null,
-            null
+            "minecraft:iron_ingot", null, "minecraft:iron_ingot",
+            null, "minecraft:iron_ingot", null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       SHEARS
-    ====================================================== */
 
     {
         id: "minecraft:shears",
-
         name: "Tijeras",
-
-        aliases: [
-            "tijeras",
-            "shears"
-        ],
-
+        aliases: ["tijeras", "shears"],
         pattern: [
-            null,
-            "minecraft:iron_ingot",
-            null,
-
-            "minecraft:iron_ingot",
-            null,
-            null,
-
-            null,
-            null,
-            null
+            null, "minecraft:iron_ingot", null,
+            "minecraft:iron_ingot", null, null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       SHIELD
-    ====================================================== */
 
     {
         id: "minecraft:shield",
-
         name: "Escudo",
-
-        aliases: [
-            "escudo",
-            "shield"
-        ],
-
+        aliases: ["escudo", "shield"],
         pattern: [
-            "minecraft:oak_planks",
-            "minecraft:iron_ingot",
-            "minecraft:oak_planks",
-
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-
-            null,
-            "minecraft:oak_planks",
-            null
+            "minecraft:oak_planks", "minecraft:iron_ingot", "minecraft:oak_planks",
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks",
+            null, "minecraft:oak_planks", null
         ]
     },
-
-
-    /* =====================================================
-       BOW
-    ====================================================== */
 
     {
         id: "minecraft:bow",
-
         name: "Arco",
-
-        aliases: [
-            "arco",
-            "bow"
-        ],
-
+        aliases: ["arco", "bow"],
         pattern: [
-            null,
-            "minecraft:stick",
-            "minecraft:string",
-
-            "minecraft:stick",
-            null,
-            "minecraft:string",
-
-            null,
-            "minecraft:stick",
-            "minecraft:string"
+            null, "minecraft:stick", "minecraft:string",
+            "minecraft:stick", null, "minecraft:string",
+            null, "minecraft:stick", "minecraft:string"
         ]
     },
-
-
-    /* =====================================================
-       FISHING ROD
-    ====================================================== */
 
     {
         id: "minecraft:fishing_rod",
-
         name: "Caña de pescar",
-
-        aliases: [
-            "caña de pescar",
-            "cana de pescar",
-            "fishing rod",
-            "fishing_rod"
-        ],
-
+        aliases: ["caña de pescar", "cana de pescar", "fishing rod", "fishing_rod"],
         pattern: [
-            null,
-            null,
-            "minecraft:stick",
-
-            null,
-            "minecraft:stick",
-            "minecraft:string",
-
-            "minecraft:stick",
-            null,
-            "minecraft:string"
+            null, null, "minecraft:stick",
+            null, "minecraft:stick", "minecraft:string",
+            "minecraft:stick", null, "minecraft:string"
         ]
     },
-
-
-    /* =====================================================
-       LEATHER HELMET
-    ====================================================== */
 
     {
         id: "minecraft:leather_helmet",
-
         name: "Casco de cuero",
-
-        aliases: [
-            "casco de cuero",
-            "casco cuero",
-            "leather helmet"
-        ],
-
+        aliases: ["casco de cuero", "casco cuero", "leather helmet"],
         pattern: [
-            "minecraft:leather",
-            "minecraft:leather",
-            "minecraft:leather",
-
-            "minecraft:leather",
-            null,
-            "minecraft:leather",
-
-            null,
-            null,
-            null
+            "minecraft:leather", "minecraft:leather", "minecraft:leather",
+            "minecraft:leather", null, "minecraft:leather",
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       IRON HELMET
-    ====================================================== */
 
     {
         id: "minecraft:iron_helmet",
-
         name: "Casco de hierro",
-
-        aliases: [
-            "casco de hierro",
-            "casco hierro",
-            "iron helmet"
-        ],
-
+        aliases: ["casco de hierro", "casco hierro", "iron helmet"],
         pattern: [
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-
-            "minecraft:iron_ingot",
-            null,
-            "minecraft:iron_ingot",
-
-            null,
-            null,
-            null
+            "minecraft:iron_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot",
+            "minecraft:iron_ingot", null, "minecraft:iron_ingot",
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       IRON CHESTPLATE
-    ====================================================== */
 
     {
         id: "minecraft:iron_chestplate",
-
         name: "Pechera de hierro",
-
-        aliases: [
-            "pechera de hierro",
-            "armadura de hierro",
-            "iron chestplate"
-        ],
-
+        aliases: ["pechera de hierro", "armadura de hierro", "iron chestplate"],
         pattern: [
-            "minecraft:iron_ingot",
-            null,
-            "minecraft:iron_ingot",
-
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot"
+            "minecraft:iron_ingot", null, "minecraft:iron_ingot",
+            "minecraft:iron_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot",
+            "minecraft:iron_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot"
         ]
     },
-
-
-    /* =====================================================
-       GLASS
-    ====================================================== */
-
-    {
-        id: "minecraft:glass",
-
-        name: "Cristal",
-
-        aliases: [
-            "cristal",
-            "vidrio",
-            "glass"
-        ],
-
-        pattern: [
-            "minecraft:glass",
-            "minecraft:glass",
-            "minecraft:glass",
-
-            "minecraft:glass",
-            "minecraft:glass",
-            "minecraft:glass",
-
-            null,
-            null,
-            null
-        ]
-    },
-
-
-    /* =====================================================
-       PAPER
-    ====================================================== */
 
     {
         id: "minecraft:paper",
-
         name: "Papel",
-
-        aliases: [
-            "papel",
-            "paper"
-        ],
-
+        aliases: ["papel", "paper"],
         pattern: [
-            "minecraft:sugar_cane",
-            "minecraft:sugar_cane",
-            "minecraft:sugar_cane",
-
-            null,
-            null,
-            null,
-
-            null,
-            null,
-            null
+            "minecraft:sugar_cane", "minecraft:sugar_cane", "minecraft:sugar_cane",
+            null, null, null,
+            null, null, null
         ]
     },
-
-
-    /* =====================================================
-       BOOK
-    ====================================================== */
-
-    {
-        id: "minecraft:book",
-
-        name: "Libro",
-
-        aliases: [
-            "libro",
-            "book"
-        ],
-
-        pattern: [
-            "minecraft:paper",
-            "minecraft:paper",
-            null,
-
-            "minecraft:paper",
-            "minecraft:leather",
-            null,
-
-            null,
-            null,
-            null
-        ]
-    },
-
-
-    /* =====================================================
-       CLOCK
-    ====================================================== */
 
     {
         id: "minecraft:clock",
-
         name: "Reloj",
-
-        aliases: [
-            "reloj",
-            "clock"
-        ],
-
+        aliases: ["reloj", "clock"],
         pattern: [
-            null,
-            "minecraft:gold_ingot",
-            null,
-
-            "minecraft:gold_ingot",
-            "minecraft:redstone",
-            "minecraft:gold_ingot",
-
-            null,
-            "minecraft:gold_ingot",
-            null
+            null, "minecraft:gold_ingot", null,
+            "minecraft:gold_ingot", "minecraft:redstone", "minecraft:gold_ingot",
+            null, "minecraft:gold_ingot", null
         ]
     },
-
-
-    /* =====================================================
-       COMPASS
-    ====================================================== */
 
     {
         id: "minecraft:compass",
-
         name: "Brújula",
-
-        aliases: [
-            "brujula",
-            "brújula",
-            "compass"
-        ],
-
+        aliases: ["brujula", "brújula", "compass"],
         pattern: [
-            null,
-            "minecraft:iron_ingot",
-            null,
-
-            "minecraft:iron_ingot",
-            "minecraft:redstone",
-            "minecraft:iron_ingot",
-
-            null,
-            "minecraft:iron_ingot",
-            null
+            null, "minecraft:iron_ingot", null,
+            "minecraft:iron_ingot", "minecraft:redstone", "minecraft:iron_ingot",
+            null, "minecraft:iron_ingot", null
         ]
     },
-
-
-    /* =====================================================
-       TNT
-    ====================================================== */
 
     {
         id: "minecraft:tnt",
-
         name: "TNT",
-
-        aliases: [
-            "tnt",
-            "dinamita"
-        ],
-
+        aliases: ["tnt", "dinamita"],
         pattern: [
-            "minecraft:gunpowder",
-            "minecraft:sand",
-            "minecraft:gunpowder",
-
-            "minecraft:sand",
-            "minecraft:gunpowder",
-            "minecraft:sand",
-
-            "minecraft:gunpowder",
-            "minecraft:sand",
-            "minecraft:gunpowder"
+            "minecraft:gunpowder", "minecraft:sand", "minecraft:gunpowder",
+            "minecraft:sand", "minecraft:gunpowder", "minecraft:sand",
+            "minecraft:gunpowder", "minecraft:sand", "minecraft:gunpowder"
         ]
     },
-
-
-    /* =====================================================
-       ENCHANTING TABLE
-    ====================================================== */
 
     {
         id: "minecraft:enchanting_table",
-
         name: "Mesa de encantamientos",
-
-        aliases: [
-            "mesa de encantamientos",
-            "mesa de encantamiento",
-            "enchanting table"
-        ],
-
+        aliases: ["mesa de encantamientos", "mesa de encantamiento", "enchanting table"],
         pattern: [
-            "minecraft:book",
-            "minecraft:diamond",
-            "minecraft:book",
-
-            "minecraft:obsidian",
-            "minecraft:obsidian",
-            "minecraft:obsidian",
-
-            "minecraft:obsidian",
-            "minecraft:obsidian",
-            "minecraft:obsidian"
+            "minecraft:book", "minecraft:diamond", "minecraft:book",
+            "minecraft:obsidian", "minecraft:obsidian", "minecraft:obsidian",
+            "minecraft:obsidian", "minecraft:obsidian", "minecraft:obsidian"
         ]
     },
-
-
-    /* =====================================================
-       ANVIL
-    ====================================================== */
 
     {
         id: "minecraft:anvil",
-
         name: "Yunque",
-
-        aliases: [
-            "yunque",
-            "anvil"
-        ],
-
+        aliases: ["yunque", "anvil"],
         pattern: [
-            "minecraft:iron_block",
-            "minecraft:iron_block",
-            "minecraft:iron_block",
-
-            null,
-            "minecraft:iron_ingot",
-            null,
-
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot",
-            "minecraft:iron_ingot"
+            "minecraft:iron_block", "minecraft:iron_block", "minecraft:iron_block",
+            null, "minecraft:iron_ingot", null,
+            "minecraft:iron_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot"
         ]
     },
-
-
-    /* =====================================================
-       HOPPER
-    ====================================================== */
 
     {
         id: "minecraft:hopper",
-
         name: "Tolva",
-
-        aliases: [
-            "tolva",
-            "hopper"
-        ],
-
+        aliases: ["tolva", "hopper"],
         pattern: [
-            "minecraft:iron_ingot",
-            null,
-            "minecraft:iron_ingot",
-
-            "minecraft:iron_ingot",
-            "minecraft:chest",
-            "minecraft:iron_ingot",
-
-            null,
-            "minecraft:iron_ingot",
-            null
+            "minecraft:iron_ingot", null, "minecraft:iron_ingot",
+            "minecraft:iron_ingot", "minecraft:chest", "minecraft:iron_ingot",
+            null, "minecraft:iron_ingot", null
         ]
     },
-
-
-    /* =====================================================
-       DISPENSER
-    ====================================================== */
 
     {
         id: "minecraft:dispenser",
-
         name: "Dispensador",
-
-        aliases: [
-            "dispensador",
-            "dispenser"
-        ],
-
+        aliases: ["dispensador", "dispenser"],
         pattern: [
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-
-            "minecraft:cobblestone",
-            "minecraft:bow",
-            " ",
-
-            "minecraft:cobblestone",
-            "minecraft:redstone",
-            "minecraft:cobblestone"
+            "minecraft:cobblestone", "minecraft:cobblestone", "minecraft:cobblestone",
+            "minecraft:cobblestone", "minecraft:bow", "minecraft:cobblestone",
+            "minecraft:cobblestone", "minecraft:redstone", "minecraft:cobblestone"
         ]
     },
-
-
-    /* =====================================================
-       DROPPER
-    ====================================================== */
 
     {
         id: "minecraft:dropper",
-
         name: "Soltador",
-
-        aliases: [
-            "soltador",
-            "dropper"
-        ],
-
+        aliases: ["soltador", "dropper"],
         pattern: [
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-            "minecraft:cobblestone",
-
-            "minecraft:cobblestone",
-            null,
-            "minecraft:cobblestone",
-
-            "minecraft:cobblestone",
-            "minecraft:redstone",
-            "minecraft:cobblestone"
+            "minecraft:cobblestone", "minecraft:cobblestone", "minecraft:cobblestone",
+            "minecraft:cobblestone", null, "minecraft:cobblestone",
+            "minecraft:cobblestone", "minecraft:redstone", "minecraft:cobblestone"
         ]
     },
-
-
-    /* =====================================================
-       PISTON
-    ====================================================== */
 
     {
         id: "minecraft:piston",
-
         name: "Pistón",
-
-        aliases: [
-            "piston",
-            "pistón",
-            "piston"
-        ],
-
+        aliases: ["piston", "pistón"],
         pattern: [
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-
-            "minecraft:cobblestone",
-            "minecraft:iron_ingot",
-            "minecraft:cobblestone",
-
-            "minecraft:cobblestone",
-            "minecraft:redstone",
-            "minecraft:cobblestone"
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks",
+            "minecraft:cobblestone", "minecraft:iron_ingot", "minecraft:cobblestone",
+            "minecraft:cobblestone", "minecraft:redstone", "minecraft:cobblestone"
         ]
     },
 
-
-    /* =====================================================
-       NOTE BLOCK
-    ====================================================== */
-
     {
         id: "minecraft:note_block",
-
         name: "Bloque musical",
-
-        aliases: [
-            "bloque musical",
-            "note block"
-        ],
-
+        aliases: ["bloque musical", "note block"],
         pattern: [
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-
-            "minecraft:oak_planks",
-            "minecraft:redstone",
-            "minecraft:oak_planks",
-
-            "minecraft:oak_planks",
-            "minecraft:oak_planks",
-            "minecraft:oak_planks"
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks",
+            "minecraft:oak_planks", "minecraft:redstone", "minecraft:oak_planks",
+            "minecraft:oak_planks", "minecraft:oak_planks", "minecraft:oak_planks"
         ]
     }
 
-];
+];;
 
 
 /* =========================================================
@@ -2303,27 +1562,22 @@ const participants =
     la sesión del widget.
 */
 
-/*
-    Skins aleatorias de NameMC.
-
-    Son hashes de skins de la página de skins aleatorias
-    de NameMC. Usamos la miniatura de cara de NameMC
-    directamente, no una skin inventada.
-*/
-
 const RANDOM_SKINS = [
 
-    "a81fb683f4932800",
-    "ddeabddcaf39951f",
-    "ec34fb90262539ce",
-    "ffdf6cd46c5a07db",
-    "4e8fb80f2bfefad7",
-    "1304256c1c9bff39",
-    "95dee22b7bd250ea",
-    "ed969aab1609b602",
-    "a6a59fbf4426891e",
-    "e694298ac4198b12",
-    "ad9a5ad4833b5c84"
+    "MHF_Steve",
+    "MHF_Alex",
+    "MHF_Creeper",
+    "MHF_Zombie",
+    "MHF_Skeleton",
+    "MHF_Enderman",
+    "MHF_Pig",
+    "MHF_Slime",
+    "MHF_Ghast",
+    "MHF_Blaze",
+    "MHF_Spider",
+    "MHF_Villager",
+    "MHF_Chicken",
+    "MHF_IronGolem"
 
 ];
 
@@ -2430,9 +1684,9 @@ function addParticipant(username) {
                 "participant-skin";
 
             img.src =
-                "https://s.namemc.com/2d/skin/face.png?id=" +
+                "https://mc-heads.net/avatar/" +
                 participant.skin +
-                "&scale=2";
+                "/20.png";
 
             img.alt =
                 "";
@@ -2905,10 +2159,14 @@ function correctAnswer(
 
 function connectTwitch() {
 
+    /*
+        Si no recibimos canal desde Pogly.
+    */
+
     if (!CHANNEL) {
 
         status.textContent =
-            "No se encontró el canal de Twitch.";
+            "Escribe un canal de Twitch en Pogly.";
 
         chatStatus.textContent =
             "Twitch: sin canal";
@@ -2917,6 +2175,10 @@ function connectTwitch() {
 
     }
 
+
+    /*
+        Comprobar que tmi.js cargó.
+    */
 
     if (
         typeof tmi ===
@@ -2934,25 +2196,9 @@ function connectTwitch() {
     }
 
 
-    if (twitchClient) {
-
-        try {
-
-            twitchClient.disconnect();
-
-        } catch (e) {
-
-            console.warn(
-                "No se pudo cerrar la conexión anterior.",
-                e
-            );
-
-        }
-
-        twitchClient = null;
-
-    }
-
+    /*
+        Crear cliente.
+    */
 
     twitchClient =
         new tmi.Client({
@@ -2963,8 +2209,7 @@ function connectTwitch() {
 
             connection: {
                 secure: true,
-                reconnect: true,
-                timeout: 20000
+                reconnect: true
             },
 
             channels: [
@@ -2974,58 +2219,47 @@ function connectTwitch() {
         });
 
 
-    twitchClient.on(
-        "connecting",
-        () => {
+    /*
+        Conexión.
+    */
 
-            chatStatus.textContent =
-                "● Twitch: conectando...";
+    twitchClient
+        .connect()
 
-        }
-    );
+        .then(
+            () => {
 
+                status.textContent =
+                    "Esperando respuesta del chat...";
 
-    twitchClient.on(
-        "connected",
-        () => {
+                chatStatus.textContent =
+                    "● Twitch: " +
+                    CHANNEL;
 
-            status.textContent =
-                "Esperando respuesta del chat...";
+            }
+        )
 
-            chatStatus.textContent =
-                "● Twitch: " +
-                CHANNEL;
+        .catch(
+            (error) => {
 
-        }
-    );
-
-
-    twitchClient.on(
-        "disconnected",
-        (reason) => {
-
-            console.warn(
-                "Twitch desconectado:",
-                reason
-            );
-
-            chatStatus.textContent =
-                "● Twitch: reconectando...";
-
-        }
-    );
+                console.error(
+                    error
+                );
 
 
-    twitchClient.on(
-        "reconnect",
-        () => {
+                status.textContent =
+                    "No se pudo conectar al chat.";
 
-            chatStatus.textContent =
-                "● Twitch: reconectando...";
+                chatStatus.textContent =
+                    "Twitch: error";
 
-        }
-    );
+            }
+        );
 
+
+    /*
+        Mensajes.
+    */
 
     twitchClient.on(
         "message",
@@ -3036,6 +2270,10 @@ function connectTwitch() {
             self
         ) => {
 
+            /*
+                Ignorar nuestros propios mensajes.
+            */
+
             if (self) {
 
                 return;
@@ -3044,7 +2282,9 @@ function connectTwitch() {
 
 
             const username =
-                tags["display-name"] ||
+                tags[
+                    "display-name"
+                ] ||
                 tags.username ||
                 "Jugador";
 
@@ -3056,26 +2296,6 @@ function connectTwitch() {
 
         }
     );
-
-
-    twitchClient
-        .connect()
-        .catch(
-            (error) => {
-
-                console.error(
-                    "Error conectando a Twitch:",
-                    error
-                );
-
-                status.textContent =
-                    "No se pudo conectar al chat.";
-
-                chatStatus.textContent =
-                    "Twitch: error";
-
-            }
-        );
 
 }
 
@@ -3093,21 +2313,14 @@ function connectTwitch() {
     seleccione una receta nueva.
 */
 
+newRecipe();
+
+
 /*
-    Primero cargamos las texturas vanilla.
-    Después mostramos la primera receta y conectamos Twitch.
+    Después conectamos Twitch.
 */
 
-loadItemTextures()
-    .finally(
-        () => {
-
-            newRecipe();
-
-            connectTwitch();
-
-        }
-    );
+connectTwitch();
 
 
 </script>
