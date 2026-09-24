@@ -15,6 +15,8 @@
 
 <style>
 
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
 /* =========================================================
    RESET
 ========================================================= */
@@ -28,8 +30,8 @@
 html,
 body {
 
-    width: 100%;
-    height: 100%;
+    width: 350px;
+    height: 310px;
 
     overflow: hidden;
 
@@ -49,7 +51,7 @@ body {
 
 #minecraft {
 
-    width: 520px;
+    width: 420px;
     height: 310px;
 
     position: relative;
@@ -119,6 +121,11 @@ body {
 
     height: 25px;
 
+    font-family:
+        "Press Start 2P",
+        "Courier New",
+        monospace;
+
     font-size: 17px;
 
     font-weight: 700;
@@ -126,6 +133,10 @@ body {
     color: #404040;
 
     text-shadow:
+        1px 0 0 #404040,
+        -1px 0 0 #404040,
+        0 1px 0 #404040,
+        0 -1px 0 #404040,
         1px 1px 0 #ffffff;
 
     letter-spacing: .2px;
@@ -200,6 +211,11 @@ body {
     border-bottom:
         3px solid #ffffff;
 
+    /* Relieve interior limpio, sin la L invertida. */
+    box-shadow:
+        inset 2px 2px 0 rgba(40,40,40,.34),
+        inset -2px -2px 0 rgba(255,255,255,.10);
+
 }
 
 
@@ -211,13 +227,13 @@ body {
 
     position: absolute;
 
-    inset: 3px;
+    inset: 4px;
 
-    border-top:
-        1px solid #555;
+    border:
+        1px solid rgba(45,45,45,.18);
 
-    border-left:
-        1px solid #555;
+    box-shadow:
+        inset 0 0 3px rgba(0,0,0,.12);
 
     pointer-events: none;
 
@@ -245,6 +261,37 @@ body {
         drop-shadow(
             2px 2px 0 rgba(0,0,0,.45)
         );
+
+    transform-origin: center center;
+
+    animation:
+        itemPop
+        .34s
+        cubic-bezier(.22,1.35,.45,1)
+        both;
+
+}
+
+@keyframes itemPop {
+
+    0% {
+        opacity: 0;
+        transform: scale(.15);
+    }
+
+    55% {
+        opacity: 1;
+        transform: scale(1.16);
+    }
+
+    78% {
+        transform: scale(.94);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 
 }
 
@@ -354,6 +401,10 @@ body {
     border-bottom:
         4px solid #ffffff;
 
+    box-shadow:
+        inset 2px 2px 0 rgba(40,40,40,.34),
+        inset -2px -2px 0 rgba(255,255,255,.10);
+
 }
 
 
@@ -365,13 +416,13 @@ body {
 
     position: absolute;
 
-    inset: 4px;
+    inset: 5px;
 
-    border-top:
-        1px solid #555;
+    border:
+        1px solid rgba(45,45,45,.18);
 
-    border-left:
-        1px solid #555;
+    box-shadow:
+        inset 0 0 4px rgba(0,0,0,.14);
 
     pointer-events: none;
 
@@ -386,13 +437,22 @@ body {
 
     margin-top: 8px;
 
-    font-size: 13px;
+    font-family:
+        "Press Start 2P",
+        "Courier New",
+        monospace;
+
+    font-size: 12px;
 
     font-weight: 700;
 
     color: #404040;
 
     text-shadow:
+        1px 0 0 #404040,
+        -1px 0 0 #404040,
+        0 1px 0 #404040,
+        0 -1px 0 #404040,
         1px 1px 0 #ffffff;
 
 }
@@ -406,9 +466,9 @@ body {
 
     margin-top: 8px;
 
-    min-height: 18px;
+    min-height: 16px;
 
-    font-size: 10px;
+    font-size: 9px;
 
     color: #404040;
 
@@ -426,9 +486,9 @@ body {
 
     margin-top: 2px;
 
-    min-height: 22px;
+    min-height: 20px;
 
-    font-size: 11px;
+    font-size: 10px;
 
     font-weight: 700;
 
@@ -477,8 +537,8 @@ body {
 
     animation:
         resultPop
-        .22s
-        steps(3);
+        .34s
+        cubic-bezier(.22,1.35,.45,1);
 
 }
 
@@ -486,19 +546,121 @@ body {
 @keyframes resultPop {
 
     0% {
-        transform: scale(.7);
+        opacity: 0;
+        transform: scale(.25);
     }
 
-    50% {
-        transform: scale(1.15);
+    55% {
+        opacity: 1;
+        transform: scale(1.18);
+    }
+
+    78% {
+        transform: scale(.94);
     }
 
     100% {
+        opacity: 1;
         transform: scale(1);
     }
 
 }
 
+
+/* =========================================================
+   PARTICIPANTS
+========================================================= */
+
+.participants {
+
+    position: absolute;
+
+    left: 20px;
+    bottom: 5px;
+
+    width: 380px;
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    overflow: hidden;
+
+}
+
+.participant {
+
+    height: 27px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    padding:
+        2px 6px
+        2px 4px;
+
+    background: rgba(139,139,139,.92);
+
+    border:
+        2px solid #373737;
+
+    box-shadow:
+        inset 1px 1px 0 rgba(255,255,255,.22),
+        2px 2px 0 rgba(0,0,0,.20);
+
+    white-space: nowrap;
+
+    max-width: 125px;
+
+}
+
+.participant-skin {
+
+    width: 20px;
+    height: 20px;
+
+    object-fit: cover;
+
+    image-rendering: pixelated;
+
+    flex: 0 0 20px;
+
+}
+
+.participant-name {
+
+    max-width: 90px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    color: #ffffff;
+
+    font-family:
+        "Press Start 2P",
+        "Courier New",
+        monospace;
+
+    font-size: 6px;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+
+    text-shadow:
+        1px 0 0 #333,
+        -1px 0 0 #333,
+        0 1px 0 #333,
+        1px 1px 0 #333;
+
+}
 
 /* =========================================================
    WINNER FLASH
@@ -528,6 +690,40 @@ body {
         opacity: 1;
     }
 
+}
+
+
+/* =========================================================
+   COMPACT PIXEL UI V3
+========================================================= */
+
+#minecraft {
+    width: 350px;
+}
+
+.content {
+    width: 310px;
+}
+
+.crafting {
+    width: 310px;
+}
+
+.arrow-container {
+    width: 92px;
+}
+
+.question {
+    width: 310px;
+}
+
+.status,
+.answer {
+    width: 310px;
+}
+
+.participants {
+    width: 310px;
 }
 
 </style>
@@ -601,7 +797,7 @@ body {
 
     <div class="question">
 
-        ¿Qué objeto se puede craftear?
+        ¿Cuál es?
 
     </div>
 
@@ -627,6 +823,16 @@ body {
     <div
         id="answer"
         class="answer"
+    ></div>
+
+
+    <!-- =====================================================
+         PARTICIPANTES
+    ====================================================== -->
+
+    <div
+        id="participants"
+        class="participants"
     ></div>
 
 
@@ -1969,6 +2175,179 @@ const answer =
 const chatStatus =
     document.getElementById("chatStatus");
 
+const participants =
+    document.getElementById("participants");
+
+
+/* =========================================================
+   PARTICIPANTES / SKINS
+========================================================= */
+
+/*
+    Iconos aleatorios de skins/heads de Minecraft.
+    Se asigna uno al usuario y se conserva durante
+    la sesión del widget.
+*/
+
+const RANDOM_SKINS = [
+
+    "MHF_Steve",
+    "MHF_Alex",
+    "MHF_Creeper",
+    "MHF_Zombie",
+    "MHF_Skeleton",
+    "MHF_Enderman",
+    "MHF_Pig",
+    "MHF_Slime",
+    "MHF_Ghast",
+    "MHF_Blaze",
+    "MHF_Spider",
+    "MHF_Villager",
+    "MHF_Chicken",
+    "MHF_IronGolem"
+
+];
+
+const participantSkins =
+    new Map();
+
+let participantList = [];
+
+
+function getRandomSkin(username) {
+
+    if (participantSkins.has(username)) {
+
+        return participantSkins.get(username);
+
+    }
+
+
+    const skin =
+        RANDOM_SKINS[
+            Math.floor(
+                Math.random() *
+                RANDOM_SKINS.length
+            )
+        ];
+
+
+    participantSkins.set(
+        username,
+        skin
+    );
+
+
+    return skin;
+
+}
+
+
+function addParticipant(username) {
+
+    if (!username) {
+        return;
+    }
+
+
+    const existing =
+        participantList.find(
+            item =>
+                item.username.toLowerCase() ===
+                username.toLowerCase()
+        );
+
+
+    if (existing) {
+
+        participantList =
+            participantList.filter(
+                item =>
+                    item.username.toLowerCase() !==
+                    username.toLowerCase()
+            );
+
+    }
+
+
+    participantList.unshift({
+
+        username: username,
+
+        skin: getRandomSkin(username)
+
+    });
+
+
+    /*
+        Mostramos solamente los últimos 3
+        para que la zona inferior permanezca limpia.
+    */
+
+    participantList =
+        participantList.slice(
+            0,
+            3
+        );
+
+
+    participants.innerHTML = "";
+
+
+    participantList.forEach(
+        participant => {
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "participant";
+
+
+            const img =
+                document.createElement("img");
+
+            img.className =
+                "participant-skin";
+
+            img.src =
+                "https://mc-heads.net/avatar/" +
+                participant.skin +
+                "/20.png";
+
+            img.alt =
+                "";
+
+
+            img.onerror =
+                function() {
+
+                    this.style.display =
+                        "none";
+
+                };
+
+
+            const name =
+                document.createElement("span");
+
+            name.className =
+                "participant-name";
+
+            name.textContent =
+                participant.username;
+
+
+            row.appendChild(img);
+            row.appendChild(name);
+
+            participants.appendChild(row);
+
+        }
+    );
+
+}
+
 
 /* =========================================================
    NORMALIZE TEXT
@@ -2095,6 +2474,14 @@ function renderRecipe(recipe) {
 
             img.className =
                 "item";
+
+            img.style.animationDelay =
+                (
+                    (
+                        grid.children.length
+                    ) * 45
+                ) +
+                "ms";
 
 
             img.src =
@@ -2237,6 +2624,11 @@ function checkAnswer(
         return;
 
     }
+
+
+    addParticipant(
+        username
+    );
 
 
     const cleanMessage =
